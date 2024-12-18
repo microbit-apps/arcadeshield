@@ -21,7 +21,7 @@ namespace __screen_internal {
         )
 
         control.__screen.setupUpdate(() => shieldhelpers.updateScreen(img))
-        radioControlRxLoop(theScreen);
+        radioControlRxLoop();
 
         return img as Bitmap;
     }
