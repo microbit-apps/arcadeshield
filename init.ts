@@ -2,6 +2,7 @@
  * Tagged bitmap literal converter
  */
 //% shim=@f4 helper=bitmaps::ofBuffer blockIdentity="bitmaps._bitmap"
+
 //% groups=["0.","1#","2T","3t","4N","5n","6G","7g","8","9","aAR","bBP","cCp","dDO","eEY","fFW"]
 function bmp(lits: any, ...args: any[]): Bitmap { return null; }
 
@@ -18,7 +19,10 @@ namespace __screen_internal {
             shieldhelpers.displayWidth(), // control.getConfigValue(DAL.CFG_DISPLAY_WIDTH, 160)
             shieldhelpers.displayHeight() // control.getConfigValue(DAL.CFG_DISPLAY_HEIGHT, 120)
         )
+
         control.__screen.setupUpdate(() => shieldhelpers.updateScreen(img))
+        radioControlRxLoop(theScreen);
+
         return img as Bitmap;
     }
 }

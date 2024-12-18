@@ -5,7 +5,6 @@
     "dependencies": {
         "core": "*",
         "radio": "*",
-        "microphone": "*",
         "arcadeshield": "*",
         "fonts": "*"
     },
@@ -24,6 +23,7 @@
         "ns.ts",
         "shieldhelpers.ts",
         "text.ts",
+        "radioControlRx.ts",
         "docs/clone.md",
         "docs/draw-line.md",
         "docs/draw-rect.md",
