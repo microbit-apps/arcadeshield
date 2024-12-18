@@ -153,7 +153,7 @@ namespace user_interface_base {
         public static fill(
             c: number
         ) {
-            Screen.fillRect(-Screen.HALF_WIDTH, -Screen.HALF_HEIGHT, Screen.WIDTH, Screen.HEIGHT, c);
+            Screen.fillRect(-Screen.HALF_WIDTH, -Screen.HALF_HEIGHT, Screen.WIDTH, Screen.HEIGHT, c)
         }
 
         public static fillRect(
