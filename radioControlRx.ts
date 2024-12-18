@@ -1,9 +1,3 @@
-
-const SCREEN_FN_ID_UPDATE_BOUNDS: number = 0;
-const SCREEN_FN_ID_X: number = 1;
-const SCREEN_FN_ID_Y: number = 2;
-const SCREEN_FN_ID_POS: number = 3;
-const SCREEN_FN_ID_IMAGE: number = 4;
 const SCREEN_FN_ID_RESET_SCREEN_IMAGE: number = 5;
 const SCREEN_FN_ID_SET_IMAGE_SIZE: number = 6;
 const SCREEN_FN_ID_DRAW_TRANSPARENT_IMAGE: number = 7;
@@ -26,23 +20,33 @@ const SCREEN_FN_ID_PRINT: number = 23;
 
 import Screen = user_interface_base.Screen
 
-
 function radioControlRxLoop() {
+    let latestString: string = "";
+
+    radio.onReceivedString((recievedString: string) => {
+        basic.showString("R");
+        latestString = recievedString;
+    })
+
+
     radio.onReceivedBuffer((buffer: Buffer) => {
         const fn_id: number = buffer[0];
         const params: Buffer = buffer.slice(1);
 
-        basic.showString("Y")
-        basic.showNumber(fn_id)
-        basic.showString("N");
-        basic.showNumber(params[0]);
-        basic.showString("n");
+        // basic.showString("Y")
+        // basic.showNumber(fn_id)
+        // basic.showString("N");
+        // basic.showNumber(params[0]);
+        // basic.showString("n");
 
         switch (fn_id) {
-            case SCREEN_FN_ID_IMAGE: { Screen.image; break; }
             case SCREEN_FN_ID_RESET_SCREEN_IMAGE: { Screen.resetScreenImage(); break; }
             case SCREEN_FN_ID_SET_IMAGE_SIZE: { Screen.setImageSize(params[0], params[1]); break; }
-            // case SCREEN_FN_ID_DRAW_TRANSPARENT_IMAGE: { Screen.drawTransparentImage(params[0], params[1], params[2]); break; }
+            case SCREEN_FN_ID_DRAW_TRANSPARENT_IMAGE: {
+                const from: Bitmap = microdata.icons.get(latestString);
+                Screen.drawTransparentImage(from, params[1], params[2]);
+                break;
+            }
             // case SCREEN_FN_ID_DRAW_TRANSPARENT_IMAGE_XFRM: { Screen.drawTransparentImageXfrm(params[0], params[1], params[2], params[3]); break; }
             case SCREEN_FN_ID_DRAW_LINE: { Screen.drawLine(params[0], params[1], params[2], params[3], params[4]); break; }
             // case SCREEN_FN_ID_DRAW_LINE_XFRM: { Screen.drawLineXfrm(params[0], params[1], params[2], params[3], params[4], params[5]); break; }
@@ -62,6 +66,6 @@ function radioControlRxLoop() {
 
             default: { break; }
         }
-        basic.showString("D");
+        // basic.showString("D");
     })
 }

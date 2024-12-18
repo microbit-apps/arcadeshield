@@ -28,6 +28,7 @@
         "screen.ts",
         "sprite.ts",
         "affine.ts",
+        "assets.ts",
         "component.ts",
         "radioControlRx.ts",
         "docs/clone.md",

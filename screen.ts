@@ -150,6 +150,12 @@ namespace user_interface_base {
             Screen.drawRect(x + w.x, y + w.y, width, height, c)
         }
 
+        public static fill(
+            c: number
+        ) {
+            Screen.fillRect(-Screen.HALF_WIDTH, -Screen.HALF_HEIGHT, Screen.WIDTH, Screen.HEIGHT, c);
+        }
+
         public static fillRect(
             x: number,
             y: number,
