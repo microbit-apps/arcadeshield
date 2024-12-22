@@ -12,21 +12,84 @@ import Screen = user_interface_base.Screen
 function radioControlRxLoop() {
     let latestString: string = "";
 
-    radio.onReceivedString((recievedString: string) => {
-        basic.showString("R");
-        latestString = recievedString;
-        basic.showNumber(latestString.length);
-    })
+    // radio.sendString("ASSET_TX_START" + ", " + iconNames.length)
+    // iconNames.forEach(name => {
+    //     Screen.sendBitmap(name, icons.get(name))
+    // })
+
+    // radio.sendString("ASSET_TX_END")
+    // basic.showString("Done")
+
+
+
+    // First message should be an ASSET_TX_START + "," + number of assets
+    // Then asset_name + "," + bitmap.height (number of rows of this asset)
+    // Each row of the bitmap of each asset is sent & reconstructed
+
+    let numberOfAssets = 0;
+    let received = false;
 
     radio.setGroup(5)
     radio.setFrequencyBand(14)
 
+    //basic.showString("W")
+    // Wait for the start message that states how many assets there are:
+    radio.onReceivedString((receivedString: string) => {
+        // basic.showString("R")
+        numberOfAssets = +receivedString.split(",")[1]
+        received = true;
+
+        // basic.showString("A: " + numberOfAssets)
+    })
+
+    while (!received) {
+        basic.pause(10)
+    }
+
+    received = false;
+    let rowsReceived = 0;
+    let assetsReceived = 0;
+    let assetBuffer: Buffer = null;
+
+    radio.onReceivedString((receivedString: string) => {
+        basic.showString("R");
+        // latestString = recievedString;
+        // basic.showNumber(latestString.length);
+
+        const data = receivedString.split(",");
+        const assetName: string = data[0];
+        const assetRowsExpected: number = +data[1];
+
+
+        rowsReceived = 0;
+        while (rowsReceived != assetRowsExpected) {
+            basic.pause(25)
+        }
+
+        assetsReceived++;
+        basic.showNumber(assetsReceived % 10);
+
+        // basic.showString(assetName)
+    })
+
+    radio.onReceivedBuffer((onReceivedBuffer: Buffer) => {
+        if (assetBuffer == null)
+            assetBuffer = onReceivedBuffer
+        else
+            assetBuffer = Buffer.concat([assetBuffer, onReceivedBuffer])
+        rowsReceived++;
+        // basic.showNumber(rowsReceived % 10);
+    })
+
+    while (assetsReceived != numberOfAssets) {
+        basic.pause(25)
+    }
 
     radio.onReceivedBuffer((buffer: Buffer) => {
         const fn_id: number = buffer[0];
         const params: Buffer = buffer.slice(1);
 
-        basic.showString("R")
+        // basic.showString("R")
 
         switch (fn_id) {
             // case SCREEN_FN_ID_ASSET_SETUP: { break;}
