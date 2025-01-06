@@ -21,69 +21,111 @@ function radioControlRxLoop() {
     // basic.showString("Done")
 
 
+    radio.setGroup(5)
+    radio.setTransmitPower(7)
+    radio.setFrequencyBand(14)
+
 
     // First message should be an ASSET_TX_START + "," + number of assets
     // Then asset_name + "," + bitmap.height (number of rows of this asset)
     // Each row of the bitmap of each asset is sent & reconstructed
 
+
+    const waitForAck = () => {
+        basic.showString("W")
+
+        let ackReceived = false;
+        let timeOut = false;
+        radio.onReceivedString(_ => {
+            ackReceived = true;
+        })
+
+        // timeout:
+        control.inBackground(() => {
+            basic.pause(200);
+            timeOut = true
+        })
+
+        while (!ackReceived && !timeOut) { basic.pause(25) }
+        radio.onReceivedValue(_ => { }) // reset radio
+
+        return timeOut;
+    };
+
+
+    // Get the 'radio.sendString("ASSET_TX_START" + ", " + iconNames.length)':
+    basic.showString("S")
+    // waitForAck();
+    let receivedStartAssetTransfer = false;
+    radio.onReceivedString(_ => receivedStartAssetTransfer = true);
+    while (!receivedStartAssetTransfer) { basic.pause(25) }
+    basic.showString("D")
+
+
     let numberOfAssets = 0;
     let received = false;
 
-    radio.setGroup(5)
-    radio.setFrequencyBand(14)
-
-    //basic.showString("W")
     // Wait for the start message that states how many assets there are:
     radio.onReceivedString((receivedString: string) => {
-        // basic.showString("R")
+        basic.showString("R")
         numberOfAssets = +receivedString.split(",")[1]
         received = true;
-
-        // basic.showString("A: " + numberOfAssets)
+        basic.showString("A: " + numberOfAssets)
     })
 
     while (!received) {
         basic.pause(10)
     }
 
+
+    radio.sendString("ACK");
+    basic.showString("D")
+
     received = false;
     let rowsReceived = 0;
     let assetsReceived = 0;
     let assetBuffer: Buffer = null;
 
+    // Handle first message per asset
     radio.onReceivedString((receivedString: string) => {
         basic.showString("R");
         // latestString = recievedString;
         // basic.showNumber(latestString.length);
 
-        const data = receivedString.split(",");
-        const assetName: string = data[0];
-        const assetRowsExpected: number = +data[1];
 
+        const data = receivedString.split(",");
+        // const assetName: string = data[0];
+        const assetRowsExpected: number = +data[1];
 
         rowsReceived = 0;
         while (rowsReceived != assetRowsExpected) {
-            basic.pause(25)
+            basic.pause(10) // radio.onReceivedBuffer() needs some time to work; but we don't want extraneous delays
         }
 
+        // Send an ack since all rows are received; now the Tx will send the next bitmap
+        radio.sendString("ACK," + assetsReceived);
         assetsReceived++;
-        basic.showNumber(assetsReceived % 10);
 
+        basic.showNumber(assetsReceived % 10);
         // basic.showString(assetName)
     })
 
+
+    // Process each row of the bitmap into a single asset:
     radio.onReceivedBuffer((onReceivedBuffer: Buffer) => {
         if (assetBuffer == null)
             assetBuffer = onReceivedBuffer
         else
             assetBuffer = Buffer.concat([assetBuffer, onReceivedBuffer])
         rowsReceived++;
+
         // basic.showNumber(rowsReceived % 10);
     })
 
     while (assetsReceived != numberOfAssets) {
         basic.pause(25)
     }
+
 
     radio.onReceivedBuffer((buffer: Buffer) => {
         const fn_id: number = buffer[0];
